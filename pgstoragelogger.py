@@ -5,17 +5,22 @@ import uuid
 import psycopg2
 from psycopg2 import sql
 import os
-import json
-import pathlib
 import socket
 import datetime
 # end import region
 
 class PGStorageLogger:
-    def __init__(self, application_name:str, level_limit:str = 'info', proc_uuid:str = '', hostname:str = '', ip: str = '', pid:int = 0, days_store:int=7) -> None:
+    def __init__(self, application_name:str, db:str, db_user:str, db_password:str, 
+                 db_host:str, db_port:int = 5432, level_limit:str = 'info', proc_uuid:str = '', 
+                 hostname:str = '', ip: str = '', pid:int = 0, days_store:int=7) -> None:
         """Constructor of PGStorageLogger.
             Args:
                 application_name (str, required) - name of Your application;
+                db (str, required) - name of Youe database in PG where logs will be store;
+                db_user (str, required) - PG username who granted to create/drop/insert schema, tables;
+                db_password (str, required) - password of PG user;
+                db_host (str, required) - server with PostgreSQL;
+                db_port (str, optional) - port of PostgreSQL. (default 5432);
                 level_limit (str, optional) - the logging level above which logs will not be saved. Info default;
                 proc_uuid (uuid, optional) - random uuid, that can help You to see a call chain;
                 hostname (str, optional) - machine name where script is running on;
@@ -26,13 +31,12 @@ class PGStorageLogger:
             Return:
                 None
         """        
-        cfg = json.load(open(pathlib.Path(pathlib.Path.cwd(),'config.json'), "r"))
         try:
-            self.connection = psycopg2.connect(user=cfg['database']['user'],
-                                               password=cfg['database']['password'],
-                                               host=cfg['database']['host'],
-                                               port=cfg['database']['port'],
-                                               database=cfg['database']['db'])
+            self.connection = psycopg2.connect(user=db_user,
+                                               password=db_password,
+                                               host=db_host,
+                                               port=db_port,
+                                               database=db)
             cursor = self.connection.cursor()
             cursor.execute("CREATE SCHEMA IF NOT EXISTS pgstorelog")
             cursor.execute("""
@@ -55,6 +59,7 @@ class PGStorageLogger:
             cursor.close()
         except Exception as e:
             print('Connection PG Error: {}'.format(e))
+            quit()
 
         self.application_name = application_name
         self.level_limit = level_limit
@@ -227,7 +232,5 @@ class PGStorageLogger:
     # end region
     
 if __name__ == '__main__':
-    test = PGStorageLogger("test",'info',hostname="superpc",days_store=2)
-    test.Info("Hello world!")
-    test.Debug("test debug")
-    print(test.Warn("This is an example."))
+    print("""Please, do not use this as a main file. You have to import this module to Your code. 
+          See example on https://github.com/le-kazankin/PGStorageLogger/example.py""")

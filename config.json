@@ -1,9 +1,0 @@
-{
-    "database":{
-        "host": "your-database-server.com",
-        "port": 5432,
-        "db":"your_database",
-        "user":"service_user",
-        "password":"service_user_password"
-    }
-}
